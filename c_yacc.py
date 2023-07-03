@@ -21,14 +21,14 @@ def p_empty(t):
 
 def p_function_declaration(t):
     """
-    function_declaration : type ID L_PAREN parameter_list R_PAREN L_BRACE statement R_BRACE
+    function_declaration : type ID L_PAREN parameter_list R_PAREN statement_block
     """
     pass
 
 
 def p_parameter_list(t):
     """
-    parameter_list : paramater
+    parameter_list : parameter
                    | parameter_list COMMA parameter
                    | empty
     """
@@ -66,7 +66,7 @@ def p_declaring_variable(t):
     pass
 
 
-def p_conditional(t):
+def p_s_conditional(t):
     """
     s_conditional : s_if
                   | s_if_else
@@ -104,10 +104,34 @@ def p_expression(t):
     pass
 
 
+def p_statement_block(t):
+    """
+    statement_block : L_BRACE statements R_BRACE
+    """
+    pass
+
+
+def p_statements(t):
+    """
+    statements : statements statement
+               | statement
+    """
+    pass
+
+
 def p_statement(t):
     """
     statement : expression SEMICOLON
-              | p_s_assign
+              | s_conditional
+              | L_BRACE statement R_BRACE
+              | statement_block
+    """
+    pass
+
+
+def p_s_while(t):
+    """
+    s_while : WHILE L_PAREN expression R_PAREN statement
     """
     pass
 
@@ -119,9 +143,9 @@ def p_int_literal(t):
     pass
 
 
-def p_s_assign(t):
+def p_e_assign(t):
     """
-    s_assign : ID EQUALS expression SEMICOLON
+    e_assign : ID EQUALS expression
     """
     pass
 
