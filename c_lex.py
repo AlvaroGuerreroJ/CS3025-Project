@@ -1,4 +1,4 @@
-import lex
+import ply.lex as lex
 
 reserved = (
     "CONTINUE",

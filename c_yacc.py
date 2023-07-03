@@ -1,8 +1,34 @@
-#import ply.yacc as yacc
+import ply.yacc as yacc
 import c_lex
+
+tokens = c_lex.tokens
+
+
+def p_conditional(t):
+    """
+    s_conditional : s_if
+                  | s_if_else
+    """
+    pass
+
+
+def p_s_if(t):
+    """
+    s_if : IF L_PAREN expression R_PAREN statement
+    """
+    pass
+
+
+def p_s_if_else(t):
+    """
+    s_if_else : IF L_PAREN expression R_PAREN statement ELSE statement
+    """
+    pass
+
 
 def p_program(t):
     t[0] = t[1]
+
 
 def p_type(t):
     """
@@ -11,96 +37,115 @@ def p_type(t):
     """
     pass
 
-names = { }
+
+def p_variable_declaration(t):
+    """
+    variable_declaration : p_type declaring_variables SEMICOLON
+    """
+    pass
 
 
-def p_statement_assign(t,s):
-    'statement : NAME EQUALS expression'
-    names[t[1]] = t[3]
-"""
-def p_expression_binop(t):
-    '''expression : expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIVIDE expression'''
-    if t[2] == '+'  : t[0] = t[1] + t[3]
-    elif t[2] == '-': t[0] = t[1] - t[3]
-    elif t[2] == '*': t[0] = t[1] * t[3]
-    elif t[2] == '/': t[0] = t[1] / t[3]
-"""
+def p_declaring_variables(t):
+    """
+    declaring_variables : declaring_variable
+                        | declaring_variables COMMA declaring_variable
+    """
 
-"""
+
+def p_declaring_variable(t):
+    """
+    declaring_variable : ID
+                       | ID EQUALS expression
+    """
+    pass
+
+
+def p_expression(t):
+    """
+    expression : int_literal
+    """
+    pass
+
+
+def p_statement(t):
+    """
+    statement : int_literal
+    """
+    pass
+
+
+def p_int_literal(t):
+    """
+    int_literal : INT_LITERAL
+    """
+    pass
+
+
+def p_statement_assign(t, s):
+    "statement : NAME EQUALS expression SEMICOLON"
+    pass
+
+
 def p_expression_plus(p):
-    'expression : expression PLUS term'
-    #   ^            ^        ^    ^
-    #  p[0]         p[1]     p[2] p[3]
+    "expression : expression PLUS term"
+    pass
 
-    p[0] = p[1] + p[3]
-    
-"""
 
 def p_expression_plus(p):
-    'expression : expression PLUS term'
-    p[0] = p[1] + p[3]
+    "expression : expression PLUS term"
+
 
 def p_expression_minus(p):
-    'expression : expression MINUS term'
-    p[0] = p[1] - p[3]
+    "expression : expression MINUS term"
+    pass
+
 
 def p_expression_term(p):
-    'expression : term'
-    p[0] = p[1]
+    "expression : term"
+
 
 def p_term_times(p):
-    'term : term TIMES factor'
-    p[0] = p[1] * p[3]
+    "term : term TIMES factor"
+
 
 def p_term_div(p):
-    'term : term DIVIDE factor'
-    p[0] = p[1] / p[3]
+    "term : term DIVIDE factor"
+    pass
+
 
 def p_term_factor(p):
-    'term : factor'
-    p[0] = p[1]
+    "term : factor"
+    pass
+
 
 def p_factor_num(p):
-    'factor : NUMBER'
-    p[0] = p[1]
+    "factor : NUMBER"
+    pass
+
 
 def p_factor_expr(p):
-    'factor : LPAREN expression RPAREN'
-    p[0] = p[2]
+    "factor : LPAREN expression RPAREN"
+    pass
 
-# Error rule for syntax errors
+
 def p_error(p):
     print("Syntax error in input!")
 
-def t_NUMBER(t):
-    r'\d+'
-    try:
-        t.value = int(t.value)
-    except ValueError:
-        print("Integer value too large %s" % t.value)
-        t.value = 0
-    return t
 
-t_ignore = " \t"
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += t.value.count("\n")
-    
-def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
-    
 def p_puts(t):
-    print(t)
-
-def p_putw(t):
-    # Input
-    t = t
+    "puts : PUTS STRING_LITERAL SEMICOLON"
     pass
 
-# Build the parser
-#parser = yacc.yacc()
+
+def p_putw(t):
+    "putw : PUTW expression SEMICOLON"
+    pass
+
+
+parser = yacc.yacc()
+if __name__ == "__main__":
+    import sys
+
+    text = sys.stdin.read()
+    r = parser.parse(text)
+    print(r)
