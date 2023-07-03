@@ -3,6 +3,18 @@ import c_lex
 
 tokens = c_lex.tokens
 
+precedence = (
+    ("left", "LT", "LE", "GT", "GE", "EQ", "NE"),  # Nonassociative operators
+    (
+        "left",
+        "LOR",
+        "LAND",
+        "LNOT",
+    ),
+    ("left", "PLUS", "MINUS"),
+    ("left", "TIMES", "DIVIDE", "MOD"),
+)
+
 
 def p_program(t):
     """
