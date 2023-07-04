@@ -55,7 +55,7 @@ def p_parameter_list(t):
                    | parameter parameter_list_others
     """
     if len(t) == 3:
-        t[0] = ("parameter_list", t[1], t[2])
+        t[0] = ("parameter_list", t[1]) + t[2][1:]
     else:
         t[0] = ("parameter_list",)
 
@@ -68,7 +68,7 @@ def p_parameter_list_others(t):
     if len(t) == 2:
         t[0] = ("parameter_list_others",)
     else:
-        t[0] = ("parameter_list_others", t[1], t[3])
+        t[0] = ("parameter_list_others",) + t[1][1:] + (t[3],)
 
 
 def p_parameter(t):
