@@ -304,9 +304,17 @@ def p_e_ne(t):
     t[0] = ("ne", t[1], t[3])
 
 
+
+def p_string_literal(t):
+    """
+    string_literal : STRING_LITERAL
+    """
+    s = t[1][1:-1]
+    t[0] = ('string_literal', s)
+
 def p_s_puts(t):
     """
-    s_puts : PUTS L_PAREN STRING_LITERAL R_PAREN SEMICOLON
+    s_puts : PUTS L_PAREN string_literal R_PAREN SEMICOLON
     """
     t[0] = ("puts", t[3])
 
