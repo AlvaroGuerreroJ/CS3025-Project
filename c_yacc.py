@@ -163,16 +163,16 @@ def p_expression(t):
                | e_ne
     """
     if len(t) == 4:
-        t[0] = ("expression", t[2])
+        t[0] = t[2]
     else:
-        t[0] = ("expression", t[1])
+        t[0] = t[1]
 
 
 def p_statement_block(t):
     """
     statement_block : L_BRACE statements R_BRACE
     """
-    t[0] = ("statement_block", t[2])
+    t[0] = t[2]
 
 
 def p_statements(t):
@@ -196,7 +196,7 @@ def p_statement(t):
               | statement_block
               | variable_declaration
     """
-    t[0] = ("statement", t[1])
+    t[0] = t[1]
 
 
 def p_s_while(t):
