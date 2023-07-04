@@ -10,7 +10,6 @@ reserved = (
     "VOID",
     "WHILE",
     # Exercise specific
-    "MAIN",
     "PUTW",
     "PUTS",
 )
