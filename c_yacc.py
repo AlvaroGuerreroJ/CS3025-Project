@@ -202,7 +202,7 @@ def p_int_literal(t):
     """
     int_literal : INT_LITERAL
     """
-    t[0] = ("int_literal", t[1])
+    t[0] = ("int_literal", int(t[1]))
 
 
 def p_e_assign(t):
