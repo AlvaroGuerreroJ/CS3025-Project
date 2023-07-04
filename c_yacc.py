@@ -97,7 +97,7 @@ def p_declaring_variables(t):
     if len(t) == 2:
         t[0] = ("declaring_variables", t[1])
     else:
-        t[0] = ("declaring_variables", t[1], t[3])
+        t[0] = ("declaring_variables",) + t[1][1:] + (t[3],)
 
 
 def p_declaring_variable(t):
