@@ -194,6 +194,7 @@ def p_statement(t):
               | s_puts
               | s_putw
               | statement_block
+              | variable_declaration
     """
     t[0] = ("statement", t[1])
 
