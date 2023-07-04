@@ -22,31 +22,46 @@ def p_program(t):
             | program variable_declaration
             | empty
     """
-    t[0] = t[1]
-    pass
+    if len(t) == 3:
+        t[0] = ("program", t[1], t[2])
+    else:
+        t[0] = ("program",)
 
 
 def p_empty(t):
     """
     empty :
     """
-    pass
+    t[0] = ("empty",)
 
 
 def p_function_definition(t):
     """
     function_definition : type ID L_PAREN parameter_list R_PAREN statement_block
     """
-    pass
+    t[0] = ("function_definition", t[1], t[2], t[4], t[6])
 
 
 def p_parameter_list(t):
     """
-    parameter_list : parameter
-                   | parameter_list COMMA parameter
-                   | empty
+    parameter_list : empty
+                   | parameter parameter_list_others
     """
-    pass
+    if len(t) == 3:
+        t[0] = ("parameter_list", t[1], t[2])
+    else:
+        t[0] = ("parameter_list",)
+
+
+def p_parameter_list_others(t):
+    """
+    parameter_list_others : parameter_list_others COMMA parameter
+                          | empty
+    """
+    if len(t) == 2:
+        t[0] = ("parameter_list_others",)
+    else:
+        t[0] = ("parameter_list_others", t[1], t[3])
 
 
 def p_parameter(t):
@@ -54,14 +69,17 @@ def p_parameter(t):
     parameter : type ID
               | type
     """
-    pass
+    if len(t) == 3:
+        t[0] = ("parameter", t[1], t[2])
+    else:
+        t[0] = ("parameter", t[1])
 
 
 def p_variable_declaration(t):
     """
     variable_declaration : type declaring_variables SEMICOLON
     """
-    pass
+    t[0] = ("variable_declaration", t[1], t[2])
 
 
 def p_declaring_variables(t):
@@ -69,7 +87,10 @@ def p_declaring_variables(t):
     declaring_variables : declaring_variable
                         | declaring_variables COMMA declaring_variable
     """
-    pass
+    if len(t) == 2:
+        t[0] = ("declaring_variables", t[1])
+    else:
+        t[0] = ("declaring_variables", t[1], t[3])
 
 
 def p_declaring_variable(t):
@@ -77,7 +98,10 @@ def p_declaring_variable(t):
     declaring_variable : ID
                        | ID EQUALS expression
     """
-    pass
+    if len(t) == 2:
+        t[0] = ("declaring_variable", t[1])
+    else:
+        t[0] = ("declaring_variable", t[1], t[3])
 
 
 def p_s_conditional(t):
@@ -85,21 +109,21 @@ def p_s_conditional(t):
     s_conditional : s_if
                   | s_if_else
     """
-    pass
+    t[0] = ("conditional", t[1])
 
 
 def p_s_if(t):
     """
     s_if : IF L_PAREN expression R_PAREN statement
     """
-    pass
+    t[0] = ("if", t[3], t[5])
 
 
 def p_s_if_else(t):
     """
     s_if_else : IF L_PAREN expression R_PAREN statement ELSE statement
     """
-    pass
+    t[0] = ("if_else", t[3], t[5], t[7])
 
 
 def p_type(t):
@@ -107,7 +131,7 @@ def p_type(t):
     type : VOID
          | INT
     """
-    pass
+    t[0] = ("type", t[1])
 
 
 def p_expression(t):
@@ -131,14 +155,17 @@ def p_expression(t):
                | e_eq
                | e_ne
     """
-    pass
+    if len(t) == 4:
+        t[0] = ("expression", t[2])
+    else:
+        t[0] = ("expression", t[1])
 
 
 def p_statement_block(t):
     """
     statement_block : L_BRACE statements R_BRACE
     """
-    pass
+    t[0] = ("statement_block", t[2])
 
 
 def p_statements(t):
@@ -146,7 +173,10 @@ def p_statements(t):
     statements : statements statement
                | empty
     """
-    pass
+    if len(t) == 2:
+        t[0] = ("statements",)
+    else:
+        t[0] = ("statements", t[1], t[2])
 
 
 def p_statement(t):
@@ -158,134 +188,134 @@ def p_statement(t):
               | s_putw
               | statement_block
     """
-    pass
+    t[0] = ("statement", t[1])
 
 
 def p_s_while(t):
     """
     s_while : WHILE L_PAREN expression R_PAREN statement
     """
-    pass
+    t[0] = ("while", t[3], t[5])
 
 
 def p_int_literal(t):
     """
     int_literal : INT_LITERAL
     """
-    pass
+    t[0] = ("int_literal", t[1])
 
 
 def p_e_assign(t):
     """
     e_assign : ID EQUALS expression
     """
-    pass
+    t[0] = ("assigns", t[1], t[3])
 
 
 def p_e_plus(t):
     """
     e_plus : expression PLUS expression
     """
-    pass
+    t[0] = ("plus", t[1], t[3])
 
 
 def p_e_minus(t):
     """
     e_minus : expression MINUS expression
     """
-    pass
+    t[0] = ("minus", t[1], t[3])
 
 
 def p_e_times(t):
     """
     e_times : expression TIMES expression
     """
-    pass
+    t[0] = ("times", t[1], t[3])
 
 
 def p_e_divide(t):
     """
     e_divide : expression DIVIDE expression
     """
-    pass
+    t[0] = ("divide", t[1], t[3])
 
 
 def p_e_mod(t):
     "e_mod : expression MOD expression"
-    pass
+    t[0] = ("mod", t[1], t[3])
 
 
 def p_e_lor(t):
     "e_lor : expression LOR expression"
-    pass
+    t[0] = ("lor", t[1], t[3])
 
 
 def p_e_land(t):
     "e_land : expression LAND expression"
-    pass
+    t[0] = ("land", t[1], t[3])
 
 
 def p_e_lnot(t):
     """
     e_lnot : LNOT expression
     """
-    pass
+    t[0] = ("lnot", t[1], t[3])
 
 
 def p_e_lt(t):
     """
     e_lt : expression LT expression
     """
-    pass
+    t[0] = ("lt", t[1], t[3])
 
 
 def p_e_gt(t):
     """
     e_gt : expression GT expression
     """
-    pass
+    t[0] = ("gt", t[1], t[3])
 
 
 def p_e_le(t):
     """
     e_le : expression LE expression
     """
-    pass
+    t[0] = ("le", t[1], t[3])
 
 
 def p_e_ge(t):
     """
     e_ge : expression GE expression
     """
-    pass
+    t[0] = ("ge", t[1], t[3])
 
 
 def p_e_eq(t):
     """
     e_eq : expression EQ expression
     """
-    pass
+    t[0] = ("eq", t[1], t[3])
 
 
 def p_e_ne(t):
     """
     e_ne : expression NE expression
     """
-    pass
+    t[0] = ("ne", t[1], t[3])
 
 
 def p_s_puts(t):
     """
     s_puts : PUTS L_PAREN STRING_LITERAL R_PAREN SEMICOLON
     """
-    pass
+    t[0] = ("puts", t[3])
 
 
 def p_s_putw(t):
     """
     s_putw : PUTW L_PAREN expression R_PAREN SEMICOLON
     """
-    pass
+    t[0] = ("putw", t[3])
 
 
 parser = yacc.yacc(debug=True)
@@ -293,5 +323,5 @@ if __name__ == "__main__":
     import sys
 
     text = sys.stdin.read()
-    r = parser.parse(text)
+    r = parser.parse(text, tracking=True)
     print(r)
