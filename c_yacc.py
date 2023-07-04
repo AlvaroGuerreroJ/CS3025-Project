@@ -183,7 +183,7 @@ def p_statements(t):
     if len(t) == 2:
         t[0] = ("statements",)
     else:
-        t[0] = ("statements", t[1], t[2])
+        t[0] = ("statements",) + t[1][1:] + (t[2],)
 
 
 def p_statement(t):
