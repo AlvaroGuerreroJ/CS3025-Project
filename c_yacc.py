@@ -27,7 +27,9 @@ def p_program(t):
 
 
 def p_empty(t):
-    "empty :"
+    """
+    empty :
+    """
     pass
 
 
@@ -110,8 +112,24 @@ def p_type(t):
 
 def p_expression(t):
     """
-    expression : int_literal
-               | L_PAREN expression R_PAREN
+    expression : L_PAREN expression R_PAREN
+               | ID
+               | int_literal
+               | e_assign
+               | e_plus
+               | e_minus
+               | e_times
+               | e_divide
+               | e_mod
+               | e_lor
+               | e_land
+               | e_lnot
+               | e_lt
+               | e_gt
+               | e_le
+               | e_ge
+               | e_eq
+               | e_ne
     """
     pass
 
@@ -126,7 +144,7 @@ def p_statement_block(t):
 def p_statements(t):
     """
     statements : statements statement
-               | statement
+               | empty
     """
     pass
 
@@ -135,7 +153,9 @@ def p_statement(t):
     """
     statement : expression SEMICOLON
               | s_conditional
-              | L_BRACE statement R_BRACE
+              | s_while
+              | s_puts
+              | s_putw
               | statement_block
     """
     pass
@@ -214,7 +234,7 @@ def p_e_lnot(t):
 
 def p_e_lt(t):
     """
-    e_lnot : expression LT expression
+    e_lt : expression LT expression
     """
     pass
 
@@ -254,17 +274,21 @@ def p_e_ne(t):
     pass
 
 
-def p_puts(t):
-    "puts : PUTS STRING_LITERAL SEMICOLON"
+def p_s_puts(t):
+    """
+    s_puts : PUTS L_PAREN STRING_LITERAL R_PAREN SEMICOLON
+    """
     pass
 
 
-def p_putw(t):
-    "putw : PUTW expression SEMICOLON"
+def p_s_putw(t):
+    """
+    s_putw : PUTW L_PAREN expression R_PAREN SEMICOLON
+    """
     pass
 
 
-parser = yacc.yacc()
+parser = yacc.yacc(debug=True)
 if __name__ == "__main__":
     import sys
 
