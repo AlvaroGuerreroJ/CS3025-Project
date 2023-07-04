@@ -23,7 +23,7 @@ def p_program(t):
             | empty
     """
     if len(t) == 3:
-        t[0] = ("program", t[1], t[2])
+        t[0] = ("program",) + t[1][1:] + (t[2],)
     else:
         t[0] = ("program",)
 
