@@ -311,13 +311,13 @@ def p_e_ne(t):
     t[0] = ("ne", t[1], t[3])
 
 
-
 def p_string_literal(t):
     """
     string_literal : STRING_LITERAL
     """
     s = t[1][1:-1]
-    t[0] = ('string_literal', s)
+    t[0] = ("string_literal", s)
+
 
 def p_s_puts(t):
     """
