@@ -18,7 +18,7 @@ precedence = (
 
 def p_program(t):
     """
-    program : program function_declaration
+    program : program function_definition
             | program variable_declaration
             | empty
     """
@@ -33,9 +33,9 @@ def p_empty(t):
     pass
 
 
-def p_function_declaration(t):
+def p_function_definition(t):
     """
-    function_declaration : type ID L_PAREN parameter_list R_PAREN statement_block
+    function_definition : type ID L_PAREN parameter_list R_PAREN statement_block
     """
     pass
 
