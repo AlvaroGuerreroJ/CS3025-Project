@@ -35,9 +35,16 @@ def p_empty(t):
     t[0] = ("empty",)
 
 
+def p_id(t):
+    """
+    id : ID
+    """
+    t[0] = ("identifier", t[1])
+
+
 def p_function_definition(t):
     """
-    function_definition : type ID L_PAREN parameter_list R_PAREN statement_block
+    function_definition : type id L_PAREN parameter_list R_PAREN statement_block
     """
     t[0] = ("function_definition", t[1], t[2], t[4], t[6])
 
@@ -66,7 +73,7 @@ def p_parameter_list_others(t):
 
 def p_parameter(t):
     """
-    parameter : type ID
+    parameter : type id
               | type
     """
     if len(t) == 3:
@@ -95,8 +102,8 @@ def p_declaring_variables(t):
 
 def p_declaring_variable(t):
     """
-    declaring_variable : ID
-                       | ID EQUALS expression
+    declaring_variable : id
+                       | id EQUALS expression
     """
     if len(t) == 2:
         t[0] = ("declaring_variable", t[1])
@@ -137,7 +144,7 @@ def p_type(t):
 def p_expression(t):
     """
     expression : L_PAREN expression R_PAREN
-               | ID
+               | id
                | int_literal
                | e_assign
                | e_plus
@@ -207,7 +214,7 @@ def p_int_literal(t):
 
 def p_e_assign(t):
     """
-    e_assign : ID EQUALS expression
+    e_assign : id EQUALS expression
     """
     t[0] = ("assigns", t[1], t[3])
 
