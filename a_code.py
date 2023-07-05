@@ -171,7 +171,6 @@ class FunctionDefinition(Node):
         codegen.write(f"goto {l_f_end}")
 
         codegen.write(l_f)
-        print(self.parameters)
         self.body.gen_code(codegen)
         codegen.write("return")
         codegen.write(l_f_end)
