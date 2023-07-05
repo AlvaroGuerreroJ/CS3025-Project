@@ -282,7 +282,7 @@ def p_e_lnot(t):
     """
     e_lnot : LNOT expression
     """
-    t[0] = c.LNot(t[1])
+    t[0] = c.LNot(t[2])
 
 
 def p_e_lt(t):
