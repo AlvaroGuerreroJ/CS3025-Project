@@ -156,8 +156,19 @@ class FunctionDefinition(Node):
         return_type_id = dih.create_node(self.return_type)
         dih.create_edge(id_, return_type_id, "return_type")
 
-        parameters_id = dih.create_node(f"{str(self.parameters)}")
+        parameters_id = dih.create_node("parameters")
         dih.create_edge(id_, parameters_id, "parameters")
+
+        for p in self.parameters:
+            p_id = dih.create_node("parameter")
+            dih.create_edge(parameters_id, p_id)
+
+            p_type_id = dih.create_node(p[0])
+            dih.create_edge(p_id, p_type_id, "type")
+
+            if len(p) == 2:
+                p_id_id = p[1].draw(dih)
+                dih.create_edge(p_id, p_id_id, 'var_name')
 
         body_id = self.body.draw(dih)
         dih.create_edge(id_, body_id, "body")
