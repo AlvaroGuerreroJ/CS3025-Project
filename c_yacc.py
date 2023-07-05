@@ -5,13 +5,13 @@ import ply.yacc as yacc
 tokens = c_lex.tokens
 
 precedence = (
-    ("left", "LT", "LE", "GT", "GE", "EQ", "NE"),  # Nonassociative operators
     (
         "left",
         "LOR",
         "LAND",
         "LNOT",
     ),
+    ("left", "LT", "LE", "GT", "GE", "EQ", "NE"),
     ("left", "PLUS", "MINUS"),
     ("left", "TIMES", "DIVIDE", "MOD"),
 )
