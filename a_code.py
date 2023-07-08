@@ -447,6 +447,26 @@ class For(Node):
         return id_
 
 
+class BoolLiteral(Expression):
+    __slots__ = ("value",)
+    type_ = Type.BOOL
+
+    def __init__(self, value):
+        self.value = value
+
+    def draw(self, dih: DotHelper):
+        id_ = dih.create_node(str(self.value))
+
+        return id_
+
+    def rvalue(self, codegen: CodeGen):
+        return self.value
+
+    def type_check(self, defs: Definitions):
+        # NOTE: Literals are trivially type correct
+        pass
+
+
 class IntLiteral(Expression):
     __slots__ = ("value",)
     type_ = Type.INT
