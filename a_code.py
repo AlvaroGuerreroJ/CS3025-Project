@@ -178,7 +178,7 @@ class Block(Node):
 
 
 class Id(Expression):
-    __slots__ = ("var_name",)
+    __slots__ = ("var_name", "real_name")
 
     def __init__(self, var_name):
         self.var_name = var_name
@@ -191,10 +191,10 @@ class Id(Expression):
         return id_
 
     def lvalue(self, codegen: CodeGen):
-        return self.var_name
+        return self.real_name
 
     def rvalue(self, codegen: CodeGen):
-        return self.var_name
+        return self.real_name
 
     def type_check(self, defs: Definitions):
         try:
@@ -202,11 +202,13 @@ class Id(Expression):
         except IndexError:
             raise TypeCheckingError(f"Variable '{self.var_name}' not in scope")
 
+        self.real_name = defs.real_name(self.var_name)
+
         self.type_ = type_
 
 
 class FId(Node):
-    __slots__ = ("var_name",)
+    __slots__ = ("var_name", "real_name")
 
     def __init__(self, var_name):
         self.var_name = var_name
@@ -218,11 +220,19 @@ class FId(Node):
 
         return id_
 
+    def lvalue(self, codegen: CodeGen):
+        return self.real_name
+
+    def rvalue(self, codegen: CodeGen):
+        return self.real_name
+
     def type_check(self, defs: Definitions):
         try:
             type_ = defs.get(self.var_name)
         except IndexError:
             raise TypeCheckingError(f"Function '{self.var_name}' not in scope")
+
+        self.real_name = defs.real_name(self.var_name)
 
         self.type_ = type_
 
@@ -264,7 +274,7 @@ class FunctionDefinition(Node):
         return id_
 
     def gen_code(self, codegen: CodeGen):
-        l_f = f":function_{self.fname.var_name}"
+        l_f = f":{self.fname.real_name}"
 
         l_f_end = f"{l_f}_end"
         codegen.write(f"goto {l_f_end}")
