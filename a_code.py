@@ -1,6 +1,47 @@
 import graphviz
 from collections import defaultdict
 import io
+import enum
+
+
+class TypeCheckingError(Exception):
+    pass
+
+
+class Type(enum.StrEnum):
+    INT = "int"
+    BOOL = "bool"
+
+
+class Definitions:
+    __slots__ = ("scopes",)
+
+    def __init__(self):
+        self.scopes = []
+
+    def has(self, id_):
+        for i, s in enumerate(reversed(self.scopes), start=1):
+            if id_ in s:
+                return -i
+
+        return False
+
+    def get(self, id_):
+        i = self.has(id_)
+
+        if i is False:
+            raise IndexError("No such variable")
+
+        return self.scopes[i][id_]
+
+    def define(self, var_name, type_):
+        self.scopes[-1][var_name] = type_
+
+    def add_scope(self):
+        self.scopes.append(dict())
+
+    def pop_scope(self):
+        self.scopes.pop()
 
 
 class CodeGen:
@@ -61,12 +102,14 @@ class Node:
 
 
 class Expression(Node):
+    __slots__ = ("type_",)
+
     def gen_code(self, codegen: CodeGen):
         self.rvalue(codegen)
 
 
 class NSBlock(Node):
-    __slots__ = "statements"
+    __slots__ = ("statements",)
 
     def __init__(self, statements):
         self.statements = statements
@@ -84,9 +127,13 @@ class NSBlock(Node):
         for st in self.statements:
             st.gen_code(codegen)
 
+    def type_check(self, defs: Definitions):
+        for s in self.statements:
+            s.type_check(defs)
+
 
 class Block(Node):
-    __slots__ = "statements"
+    __slots__ = ("statements",)
 
     def __init__(self, statements):
         self.statements = statements
@@ -104,9 +151,15 @@ class Block(Node):
         for st in self.statements:
             st.gen_code(codegen)
 
+    def type_check(self, defs: Definitions):
+        defs.add_scope()
+        for s in self.statements:
+            s.type_check(defs)
+        defs.pop_scope()
+
 
 class Id(Expression):
-    __slots__ = "var_name"
+    __slots__ = ("var_name",)
 
     def __init__(self, var_name):
         self.var_name = var_name
@@ -124,9 +177,17 @@ class Id(Expression):
     def rvalue(self, codegen: CodeGen):
         return self.var_name
 
+    def type_check(self, defs: Definitions):
+        try:
+            type_ = defs.get(self.var_name)
+        except IndexError:
+            raise TypeCheckingError(f"Variable '{self.var_name}' not in scope")
+
+        self.type_ = type_
+
 
 class FId(Node):
-    __slots__ = "var_name"
+    __slots__ = ("var_name",)
 
     def __init__(self, var_name):
         self.var_name = var_name
@@ -137,6 +198,9 @@ class FId(Node):
         dih.create_edge(id_, var_id)
 
         return id_
+
+    def type_check(self, defs: Definitions):
+        raise RuntimeError("Not implemented")
 
 
 class FunctionDefinition(Node):
@@ -168,7 +232,7 @@ class FunctionDefinition(Node):
 
             if len(p) == 2:
                 p_id_id = p[1].draw(dih)
-                dih.create_edge(p_id, p_id_id, 'var_name')
+                dih.create_edge(p_id, p_id_id, "var_name")
 
         body_id = self.body.draw(dih)
         dih.create_edge(id_, body_id, "body")
@@ -186,19 +250,31 @@ class FunctionDefinition(Node):
         codegen.write("return")
         codegen.write(l_f_end)
 
+    def type_check(self, defs: Definitions):
+        defs.add_scope()
+
+        for p in self.parameters:
+            # TODO: WTD?
+            print(p)
+
+        # TODO: Define types for functions, will be needed for function calls
+        self.body.type_check(defs)
+
+        defs.pop_scope()
+
 
 class VariableDeclaration(Node):
-    __slots__ = ("var_name", "v_type")
+    __slots__ = ("var", "v_type")
 
-    def __init__(self, var_name, v_type):
-        self.var_name = var_name
+    def __init__(self, var, v_type):
+        self.var = var
         self.v_type = v_type
 
     def draw(self, dih: DotHelper):
         id_ = dih.create_node("VariableDeclaration")
 
-        var_name_id = self.var_name.draw(dih)
-        dih.create_edge(id_, var_name_id)
+        var_id = self.var.draw(dih)
+        dih.create_edge(id_, var_id)
 
         type_id = dih.create_node(self.v_type)
         dih.create_edge(id_, type_id, "type")
@@ -206,7 +282,16 @@ class VariableDeclaration(Node):
         return id_
 
     def gen_code(self, codegen: CodeGen):
+        # NOTE: Variable declarations are only for typechecking, no code is produced
         pass
+
+    def type_check(self, defs: Definitions):
+        if defs.has(self.var.var_name) == -1:
+            raise TypeCheckingError(
+                f"Variable '{self.var.var_name}' already defined in scope"
+            )
+
+        defs.define(self.var.var_name, self.v_type)
 
 
 class If(Node):
@@ -237,6 +322,14 @@ class If(Node):
         self.then_statement.gen_code(codegen)
         codegen.write(l_if_skip)
 
+    def type_check(self, defs: Definitions):
+        self.condition.type_check()
+
+        if self.condition.type_ != Type.BOOL:
+            raise TypeCheckingError("Condition of If statement is not of Bool type")
+
+        self.then_statement.type_check()
+
 
 class IfElse(Node):
     __slots__ = ("condition", "then_statement", "else_statement")
@@ -247,7 +340,7 @@ class IfElse(Node):
         self.else_statement = else_statement
 
     def draw(self, dih: DotHelper):
-        id_ = dih.create_node("If")
+        id_ = dih.create_node("IfElse")
 
         condition_id = self.condition.draw(dih)
         dih.create_edge(id_, condition_id, "condition")
@@ -275,6 +368,15 @@ class IfElse(Node):
         self.else_statement.gen_code(codegen)
 
         codegen.write(l_if_end)
+
+    def type_check(self, defs: Definitions):
+        self.condition.type_check(defs)
+
+        if self.condition.type_ != Type.BOOL:
+            raise TypeCheckingError("Condition of IfElse statement is not of Bool type")
+
+        self.then_statement.type_check(defs)
+        self.else_statement.type_check(defs)
 
 
 class While(Node):
@@ -309,6 +411,14 @@ class While(Node):
 
         codegen.write(l_while_end)
 
+    def type_check(self, defs: Definitions):
+        self.condition.type_check(defs)
+
+        if self.condition.type_ != Type.BOOL:
+            raise TypeCheckingError("Condition of While statement is not of Bool type")
+
+        self.body.type_check(defs)
+
 
 class For(Node):
     __slots__ = ("initialization", "condition", "update", "body")
@@ -338,7 +448,8 @@ class For(Node):
 
 
 class IntLiteral(Expression):
-    __slots__ = "value"
+    __slots__ = ("value",)
+    type_ = Type.INT
 
     def __init__(self, value):
         self.value = value
@@ -350,6 +461,10 @@ class IntLiteral(Expression):
 
     def rvalue(self, codegen: CodeGen):
         return self.value
+
+    def type_check(self, defs: Definitions):
+        # NOTE: Literals are trivially type correct
+        pass
 
 
 class Assignment(Expression):
@@ -376,9 +491,22 @@ class Assignment(Expression):
         codegen.write(f"{id_lv} = {exp_rv}")
         return self.id_
 
+    def type_check(self, defs: Definitions):
+        self.id_.type_check(defs)
+        self.exp.type_check(defs)
+
+        if self.id_.type_ != self.exp.type_:
+            raise TypeCheckingError(
+                f"Trying to assign expression of type {self.exp.type_} to variable {self.id_.type_} of type {self.id_.type_}"
+            )
+
+        self.type_ = self.id_.type_
+
 
 class LNot:
     __slots__ = ("exp",)
+
+    type_ = Type.BOOL
 
     def __init__(self, exp):
         self.exp = exp
@@ -397,9 +525,15 @@ class LNot:
 
         return id_
 
+    def type_check(self, defs: Definitions):
+        self.exp.type_check(defs)
+
+        if self.exp.type_ != Type.BOOL:
+            raise TypeCheckingError("Not (!) operator must be applied to a boolean")
+
 
 class BinaryExp(Expression):
-    __slots__ = ("exp1", "exp2")
+    __slots__ = ("exp1", "exp2", "exp1_type", "exp2_type")
 
     def __init__(self, exp1, exp2):
         self.exp1 = exp1
@@ -426,74 +560,155 @@ class BinaryExp(Expression):
 
         return tv
 
+    def type_check(self, defs: Definitions):
+        self.exp1.type_check(defs)
+        if self.exp1.type_ != self.exp1_type:
+            raise TypeCheckingError(
+                f"{self.c_op_name} ({self.op}) operator first operand must be of type {self.exp1_type}"
+            )
+
+        self.exp2.type_check(defs)
+        if self.exp2.type_ != self.exp2_type:
+            raise TypeCheckingError(
+                f"{self.c_op_name} ({self.op}) operator second operand must be of type {self.exp2_type}"
+            )
+
 
 class Plus(BinaryExp):
     c_op_name = "Plus"
     op = "+"
+
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.INT
 
 
 class Minus(BinaryExp):
     c_op_name = "Minus"
     op = "-"
 
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.INT
+
 
 class Times(BinaryExp):
     c_op_name = "Times"
     op = "*"
+
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.INT
 
 
 class Divide(BinaryExp):
     c_op_name = "Divide"
     op = "/"
 
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.INT
+
 
 class Mod(BinaryExp):
     c_op_name = "Mod"
     op = "mod"
+
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.INT
 
 
 class LOr(BinaryExp):
     c_op_name = "LOr"
     op = "||"
 
+    exp1_type = Type.BOOL
+    exp2_type = Type.BOOL
+    type_ = Type.BOOL
+
 
 class LAnd(BinaryExp):
     c_op_name = "LAnd"
     op = "&&"
+
+    exp1_type = Type.BOOL
+    exp2_type = Type.BOOL
+    type_ = Type.BOOL
 
 
 class LT(BinaryExp):
     c_op_name = "LT"
     op = "<"
 
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.BOOL
+
 
 class GT(BinaryExp):
     c_op_name = "GT"
     op = ">"
+
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.BOOL
 
 
 class LE(BinaryExp):
     c_op_name = "LE"
     op = "<="
 
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.BOOL
+
 
 class GE(BinaryExp):
     c_op_name = "GE"
     op = ">="
+
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.BOOL
 
 
 class EQ(BinaryExp):
     c_op_name = "EQ"
     op = "=="
 
+    type_ = Type.BOOL
+
+    def type_check(self, defs: Definitions):
+        self.exp1.type_check(defs)
+        self.exp2.type_check(defs)
+
+        if self.exp1.type_ != self.exp2.type_:
+            raise TypeCheckingError(
+                f"{self.c_op_name} ({self.op}) operators must be of the same type (given {self.exp1.type_} and {self.exp2.type_})"
+            )
+
 
 class NE(BinaryExp):
     c_op_name = "NE"
     op = "!="
 
+    exp1_type = Type.INT
+    exp2_type = Type.INT
+    type_ = Type.BOOL
+
+    def type_check(self, defs: Definitions):
+        self.exp1.type_check(defs)
+        self.exp2.type_check(defs)
+
+        if self.exp1.type_ != self.exp2.type_:
+            raise TypeCheckingError(
+                f"{self.c_op_name} ({self.op}) operators must be of the same type (given {self.exp1.type_} and {self.exp2.type_})"
+            )
+
 
 class Puts(Node):
-    __slots__ = "string"
+    __slots__ = ("string",)
 
     def __init__(self, string):
         self.string = string
@@ -509,9 +724,12 @@ class Puts(Node):
     def gen_code(self, codegen: CodeGen):
         codegen.write(f"puts {repr(self.string)}")
 
+    def type_check(self, defs: Definitions):
+        pass
+
 
 class Putw(Node):
-    __slots__ = "exp"
+    __slots__ = ("exp",)
 
     def __init__(self, exp):
         self.exp = exp
@@ -527,3 +745,11 @@ class Putw(Node):
     def gen_code(self, codegen: CodeGen):
         exp_rv = self.exp.rvalue(codegen)
         codegen.write(f"putw {exp_rv}")
+
+    def type_check(self, defs: Definitions):
+        self.exp.type_check(defs)
+
+        if self.exp.type_ != Type.INT:
+            raise TypeCheckingError(
+                f"Argument to Putw should be of type {Type.INT} but was {self.exp.type_}."
+            )
