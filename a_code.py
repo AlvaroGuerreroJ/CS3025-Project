@@ -31,7 +31,7 @@ class Definitions:
         self.scopes = []
 
     def has(self, id_):
-        for i, s in enumerate(reversed(self.scopes), start=1):
+        for i, (sname, s) in enumerate(reversed(self.scopes), start=1):
             if id_ in s:
                 return -i
 
@@ -43,13 +43,22 @@ class Definitions:
         if i is False:
             raise IndexError("No such variable")
 
-        return self.scopes[i][id_]
+        return self.scopes[i][1][id_]
 
-    def define(self, var_name, type_):
-        self.scopes[-1][var_name] = type_
+    def real_name(self, id_):
+        i = self.has(id_)
 
-    def add_scope(self):
-        self.scopes.append(dict())
+        if i is False:
+            raise IndexError("No such variable")
+
+        rn = f"{self.scopes[i][0]}_{id_}"
+        return rn
+
+    def define(self, var_name, type_, index=-1):
+        self.scopes[index][1][var_name] = type_
+
+    def add_scope(self, sname: str):
+        self.scopes.append((sname, dict()))
 
     def pop_scope(self):
         self.scopes.pop()
@@ -266,7 +275,7 @@ class FunctionDefinition(Node):
         codegen.write(l_f_end)
 
     def type_check(self, defs: Definitions):
-        defs.add_scope()
+        defs.add_scope(f"f_{self.fname.var_name}_{id(self)}")
 
         for (p_type, p_id) in self.parameters:
             p_name = p_id.var_name
