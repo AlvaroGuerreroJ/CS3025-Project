@@ -9,7 +9,7 @@ precedence = (
     ("left", "LOR"),
     ("left", "LAND"),
     ("left", "EQ", "NE"),
-    ("left", "LT", "LE", "GT", "GE", "EQ", "NE"),
+    ("left", "LT", "LE", "GT", "GE"),
     ("left", "PLUS", "MINUS"),
     ("left", "TIMES", "DIVIDE", "MOD"),
     ("left", "LNOT"),
