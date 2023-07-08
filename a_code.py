@@ -556,8 +556,19 @@ class FunctionCall(Expression):
         return id_
 
     def rvalue(self, codegen: CodeGen):
-        # TODO
-        pass
+        aa = []
+        for a in self.arguments:
+            aa.append(a.rvalue(codegen))
+
+        # Inserted in reverse order so that the first argument ends on the top of the
+        # stack
+        for t_a in reversed(aa):
+            codegen.write(f"push {t_a}")
+
+        tv = codegen.gen_temp()
+        codegen.write(f"{tv} = fcall {self.fname.real_name}")
+
+        return tv
 
     def type_check(self, defs: Definitions):
         self.fname.type_check(defs)
