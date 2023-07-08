@@ -298,7 +298,9 @@ class FunctionDefinition(Node):
         defs.define(
             self.fname.var_name,
             FunctionType(self.return_type, [p[0] for p in self.parameters]),
+            -2,
         )
+        self.fname.type_check(defs)
         self.body.type_check(defs)
 
         defs.pop_scope()
