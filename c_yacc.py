@@ -149,13 +149,18 @@ def p_s_if_else(t):
     t[0] = c.IfElse(t[3], t[5], t[7])
 
 
-def p_type(t):
+def p_type_1(t):
     """
-    type : VOID
-         | INT
-         | BOOL
+    type : INT
     """
-    t[0] = t[1]
+    t[0] = c.Type.INT
+
+
+def p_type_2(t):
+    """
+    type : BOOL
+    """
+    t[0] = c.Type.BOOL
 
 
 def p_expression(t):
