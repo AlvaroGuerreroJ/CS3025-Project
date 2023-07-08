@@ -108,8 +108,7 @@ def draw(node):
 
 
 class Node:
-    def draw():
-        pass
+    pass
 
 
 class Expression(Node):
