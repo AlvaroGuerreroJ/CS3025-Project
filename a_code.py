@@ -211,7 +211,12 @@ class FId(Node):
         return id_
 
     def type_check(self, defs: Definitions):
-        raise RuntimeError("Not implemented")
+        try:
+            type_ = defs.get(self.var_name)
+        except IndexError:
+            raise TypeCheckingError(f"Function '{self.var_name}' not in scope")
+
+        self.type_ = type_
 
 
 class FunctionDefinition(Node):
@@ -503,6 +508,54 @@ class IntLiteral(Expression):
     def type_check(self, defs: Definitions):
         # NOTE: Literals are trivially type correct
         pass
+
+
+class FunctionCall(Expression):
+    __slots__ = ("fname", "arguments")
+
+    def __init__(self, fname, arguments):
+        self.fname = fname
+        self.arguments = arguments
+
+    def draw(self, dih: DotHelper):
+        id_ = dih.create_node("FunctionCall")
+
+        fname_id = self.fname.draw(dih)
+        dih.create_edge(id_, fname_id, "fname")
+
+        arguments_id = dih.create_node("arguments")
+        dih.create_edge(id_, arguments_id)
+
+        for ae in self.arguments:
+            ae_id = ae.draw(dih)
+            dih.create_edge(arguments_id, ae_id)
+
+        return id_
+
+    def rvalue(self, codegen: CodeGen):
+        # TODO
+        pass
+
+    def type_check(self, defs: Definitions):
+        self.fname.type_check(defs)
+
+        if len(self.fname.type_.parameters) != len(self.arguments):
+            raise TypeCheckingError(
+                f"Wrong number arguments for call to {self.fname.var_name}, "
+                f"expected {len(self.fname.type_.parameters)} but given {len(self.arguments)}"
+            )
+
+        for i, (parameter_type, argument_type) in enumerate(
+            zip(self.fname.type_.parameters, (a.type_ for a in self.arguments)),
+            start=1,
+        ):
+            if parameter_type != argument_type:
+                raise TypeCheckingError(
+                    f"Argument {i} for call to {self.fname.var_name} "
+                    f"should be of type {parameter_type} but {argument_type} was given."
+                )
+
+        self.type_ = self.fname.type_.return_
 
 
 class Assignment(Expression):
