@@ -13,6 +13,17 @@ class Type(enum.StrEnum):
     BOOL = "bool"
 
 
+class FunctionType:
+    __slots__ = ("return_", "parameters")
+
+    def __init__(self, return_type, parameters_types):
+        self.return_ = return_type
+        self.parameters = parameters_types
+
+    def __repr__(self):
+        return f'<FunctionType {self.return_}({", ".join(self.parameters)})>'
+
+
 class Definitions:
     __slots__ = ("scopes",)
 
@@ -253,11 +264,18 @@ class FunctionDefinition(Node):
     def type_check(self, defs: Definitions):
         defs.add_scope()
 
-        for p in self.parameters:
-            # TODO: WTD?
-            print(p)
+        for (p_type, p_id) in self.parameters:
+            p_name = p_id.var_name
+            if defs.has(p_name) == -1:
+                raise TypeCheckingError(f"Repeated parameter {p_name}.")
+
+            defs.define(p_name, p_type)
 
         # TODO: Define types for functions, will be needed for function calls
+        defs.define(
+            self.fname.var_name,
+            FunctionType(self.return_type, [p[0] for p in self.parameters]),
+        )
         self.body.type_check(defs)
 
         defs.pop_scope()
