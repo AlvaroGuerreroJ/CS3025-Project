@@ -53,7 +53,8 @@ def p_function_definition(t):
     """
     function_definition : type fid L_PAREN parameter_list R_PAREN statement_block
     """
-    t[0] = c.FunctionDefinition(t[2], t[1], t[4], t[6])
+    sts = c.NSBlock(t[6].statements)
+    t[0] = c.FunctionDefinition(t[2], t[1], t[4], sts)
 
 
 def p_parameter_list(t):
