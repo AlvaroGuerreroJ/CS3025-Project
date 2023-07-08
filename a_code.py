@@ -162,7 +162,7 @@ class Block(Node):
             st.gen_code(codegen)
 
     def type_check(self, defs: Definitions):
-        defs.add_scope()
+        defs.add_scope(f"block_{id(self)}")
         for s in self.statements:
             s.type_check(defs)
         defs.pop_scope()
@@ -314,6 +314,30 @@ class VariableDeclaration(Node):
             )
 
         defs.define(self.var.var_name, self.v_type)
+
+
+class Return(Node):
+    __slots__ = ("exp",)
+
+    def __init__(self, exp):
+        self.exp = exp
+
+    def draw(self, dih: DotHelper):
+        id_ = dih.create_node("Return")
+
+        exp_id = self.exp.draw(dih)
+        dih.create_edge(id_, exp_id)
+
+        return id_
+
+    def gen_code(self, codegen: CodeGen):
+        exp_rv = self.exp.rvalue(codegen)
+        codegen.write(f"return {exp_rv}")
+
+    def type_check(self, defs: Definitions):
+        self.exp.type_check(defs)
+
+        # TODO: Check that the value being returned is of the return type of the closest subroutine
 
 
 class If(Node):
