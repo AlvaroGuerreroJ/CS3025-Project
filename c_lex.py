@@ -6,9 +6,12 @@ reserved = (
     "FOR",
     "IF",
     "INT",
+    "BOOL",
     "RETURN",
     "VOID",
     "WHILE",
+    "TRUE",
+    "FALSE",
     # Exercise specific
     "PUTW",
     "PUTS",
