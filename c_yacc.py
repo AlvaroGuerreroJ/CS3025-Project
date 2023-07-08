@@ -169,6 +169,7 @@ def p_expression(t):
                | id
                | bool_literal
                | int_literal
+               | e_function_call
                | e_assign
                | e_plus
                | e_minus
@@ -248,6 +249,35 @@ def p_int_literal(t):
     int_literal : INT_LITERAL
     """
     t[0] = c.IntLiteral(int(t[1]))
+
+
+def p_e_function_call(t):
+    """
+    e_function_call : id L_PAREN argument_list R_PAREN
+    """
+    t[0] = c.FunctionCall(t[1], t[3])
+
+
+def p_argument_list(t):
+    """
+    argument_list : empty
+                  | expression argument_list_others
+    """
+    if len(t) == 3:
+        t[0] = [t[1]] + t[2]
+    else:
+        t[0] = []
+
+
+def p_argument_list_others(t):
+    """
+    argument_list_others : argument_list_others COMMA expression
+                         | empty
+    """
+    if len(t) == 2:
+        t[0] = []
+    else:
+        t[0] = t[1] + [t[3]]
 
 
 def p_e_assign(t):
