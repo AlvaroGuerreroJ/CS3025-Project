@@ -152,6 +152,7 @@ def p_type(t):
     """
     type : VOID
          | INT
+         | BOOL
     """
     t[0] = t[1]
 
@@ -160,6 +161,7 @@ def p_expression(t):
     """
     expression : L_PAREN expression R_PAREN
                | id
+               | bool_literal
                | int_literal
                | e_assign
                | e_plus
@@ -219,6 +221,20 @@ def p_s_while(t):
     s_while : WHILE L_PAREN expression R_PAREN statement
     """
     t[0] = c.While(t[3], t[5])
+
+
+def p_bool_literal_1(t):
+    """
+    bool_literal : TRUE
+    """
+    t[0] = c.BoolLiteral(True)
+
+
+def p_bool_literal_2(t):
+    """
+    bool_literal : FALSE
+    """
+    t[0] = c.BoolLiteral(False)
 
 
 def p_int_literal(t):
