@@ -394,12 +394,12 @@ class If(Node):
         codegen.write(l_if_skip)
 
     def type_check(self, defs: Definitions):
-        self.condition.type_check()
+        self.condition.type_check(defs)
 
         if self.condition.type_ != Type.BOOL:
             raise TypeCheckingError("Condition of If statement is not of Bool type")
 
-        self.then_statement.type_check()
+        self.then_statement.type_check(defs)
 
 
 class IfElse(Node):
