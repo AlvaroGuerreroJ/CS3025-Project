@@ -280,6 +280,10 @@ class FunctionDefinition(Node):
         codegen.write(f"goto {l_f_end}")
 
         codegen.write(l_f)
+
+        for p_type, p_id in self.parameters:
+            codegen.write(f"pop {p_id.real_name}")
+
         self.body.gen_code(codegen)
         codegen.write("return")
         codegen.write(l_f_end)
