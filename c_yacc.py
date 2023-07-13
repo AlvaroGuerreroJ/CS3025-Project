@@ -127,6 +127,12 @@ def p_declaring_variable(t):
         t[0] = (t[1], t[3])
 
 
+def p_s_return(t):
+    """
+    s_return : RETURN expression SEMICOLON
+    """
+    t[0] = c.Return(t[2])
+
 def p_s_conditional(t):
     """
     s_conditional : s_if
@@ -213,6 +219,7 @@ def p_statements(t):
 def p_statement(t):
     """
     statement : expression SEMICOLON
+              | s_return
               | s_conditional
               | s_while
               | s_puts
