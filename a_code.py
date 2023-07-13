@@ -297,6 +297,7 @@ class FunctionDefinition(Node):
                 raise TypeCheckingError(f"Repeated parameter {p_name}.")
 
             defs.define(p_name, p_type)
+            p_id.type_check(defs)
 
         # TODO: Define types for functions, will be needed for function calls
         defs.define(
