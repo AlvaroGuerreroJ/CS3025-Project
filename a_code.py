@@ -605,6 +605,9 @@ class FunctionCall(Expression):
                 f"expected {len(self.fname.type_.parameters)} but given {len(self.arguments)}"
             )
 
+        for argument in self.arguments:
+            argument.type_check(defs)
+
         for i, (parameter_type, argument_type) in enumerate(
             zip(self.fname.type_.parameters, (a.type_ for a in self.arguments)),
             start=1,
