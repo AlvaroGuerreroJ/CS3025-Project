@@ -260,7 +260,7 @@ def p_int_literal(t):
 
 def p_e_function_call(t):
     """
-    e_function_call : id L_PAREN argument_list R_PAREN
+    e_function_call : fid L_PAREN argument_list R_PAREN
     """
     t[0] = c.FunctionCall(t[1], t[3])
 
