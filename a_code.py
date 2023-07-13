@@ -591,7 +591,8 @@ class FunctionCall(Expression):
             codegen.write(f"push {t_a}")
 
         tv = codegen.gen_temp()
-        codegen.write(f"{tv} = fcall {self.fname.real_name}")
+        codegen.write(f"fcall :{self.fname.real_name}")
+        codegen.write(f"pop {tv}")
 
         return tv
 
